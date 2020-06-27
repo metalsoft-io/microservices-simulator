@@ -96,31 +96,33 @@ func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, po
 
 		chains := combin.Combinations(len(srvs), k)
 
-		for _, indexes := range chains {
+		indexes := chains[0]
 
-			chain := []string{}
-			for _, idx := range shuffle(indexes) {
-				chain = append(chain, srvs[idx])
-			}
+		//	for _, indexes := range chains {
 
-			//we get the payload through the chain and we measure how much time it takes
-			start := time.Now()
-
-			_, err := getPayloadFromChain(chain, port)
-
-			duration := time.Since(start).Seconds()
-
-			if err != nil {
-				duration = -1
-			}
-
-			if showChain {
-				fmt.Printf("\"%v\",%d,%f\n", chain, len(chain), duration)
-			} else {
-				fmt.Printf("%d,%f\n", len(chain), duration)
-			}
-
+		chain := []string{}
+		for _, idx := range shuffle(indexes) {
+			chain = append(chain, srvs[idx])
 		}
+
+		//we get the payload through the chain and we measure how much time it takes
+		start := time.Now()
+
+		_, err := getPayloadFromChain(chain, port)
+
+		duration := time.Since(start).Seconds()
+
+		if err != nil {
+			duration = -1
+		}
+
+		if showChain {
+			fmt.Printf("\"%v\",%d,%f\n", chain, len(chain), duration)
+		} else {
+			fmt.Printf("%d,%f\n", len(chain), duration)
+		}
+
+		//	}
 	}
 
 	return nil
