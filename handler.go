@@ -2,17 +2,18 @@ package main
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type myHandler struct {
-	myIP    string
-	Payload []byte
-	Port    int64
+	myIP string
+	Port int64
 }
 
 func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -41,15 +42,39 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	payloadSizeArg := r.URL.Query().Get("payload_size")
+
+	if payloadSizeArg == "" {
+		err = fmt.Errorf("missing payload_size argument")
+		log.Print(err)
+		r.Response.StatusCode = 500
+		w.Write([]byte(fmt.Sprint(err)))
+		return
+	}
+
+	payloadSize, err := strconv.ParseInt(payloadSizeArg, 10, 64)
+	if err != nil {
+		log.Print(err)
+		r.Response.StatusCode = 500
+		w.Write([]byte(fmt.Sprint(err)))
+		return
+	}
+
 	//if we are the last in the chain we return the payload
 	//otherwise contact the next element in the chain and return the payload returned by that call
 	if len(ips) == 0 {
-		w.Write(m.Payload)
+
+		payload := make([]byte, payloadSize)
+
+		//generate random payload
+		rand.Read(payload)
+
+		w.Write(payload)
 		r.Response.StatusCode = 200
 	} else {
 
 		//our next hop is the first on the list
-		b, err := getPayloadFromChain(ips, m.Port)
+		b, err := getPayloadFromChain(ips, m.Port, payloadSize)
 
 		if err != nil {
 			log.Print(err)

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 
 //getPayloadFromChain contacts the first ip in the chain asking from
 // payload from the last by going through all of the hops in the chain
-func getPayloadFromChain(URLs []string, port int64) ([]byte, error) {
+func getPayloadFromChain(URLs []string, port int64, payloadSize int64) ([]byte, error) {
 
 	nextHop := URLs[0]
 
@@ -23,6 +24,9 @@ func getPayloadFromChain(URLs []string, port int64) ([]byte, error) {
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", nextHop, bytes.NewReader(reqBody))
+
+	req.URL.Query().Add("payload_size", fmt.Sprintf("%d", payloadSize))
+
 	if err != nil {
 		log.Fatal(err)
 	}

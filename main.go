@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
 	"flag"
 	"fmt"
 	"log"
@@ -29,7 +28,7 @@ import (
 //latency depending on chain length. pre-generate a list of paths to call
 //will call all of them and measure the latency of each of them (sequencially)
 
-func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generation string, listenOnIP string, port int64, payloadSize int64) error {
+func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generation string, listenOnIP string, port int64) error {
 	//determine my ip
 	myIP := getMyIP(interfaceName, ipv6)
 	log.Printf("Discovered IP %s from interface %s", myIP, interfaceName)
@@ -41,7 +40,7 @@ func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generati
 	go registerInEtcdAndRenewLeases(myIP, port, etcdEndpoints, finished)
 
 	//start http server
-	go startHTTPServer(listenOnIP, port, myIP, payloadSize)
+	go startHTTPServer(listenOnIP, port, myIP)
 
 	//forever loop of the main thread
 	for {
@@ -50,16 +49,13 @@ func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generati
 
 }
 
-func startHTTPServer(listenOnIP string, port int64, myIP string, payloadSize int64) {
+func startHTTPServer(listenOnIP string, port int64, myIP string) {
 
 	handler := myHandler{
-		myIP:    myIP,
-		Payload: make([]byte, payloadSize),
+		myIP: myIP,
 	}
 
 	handler.Port = port
-	//generate random payload
-	rand.Read(handler.Payload)
 
 	listenOnAddrPort := fmt.Sprintf("%s:%d", listenOnIP, port)
 	log.Printf("Listening on %s", listenOnAddrPort)
@@ -70,7 +66,7 @@ func startHTTPServer(listenOnIP string, port int64, myIP string, payloadSize int
 	}
 }
 
-func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, port int64, count int, showChain bool) error {
+func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, port int64, count int, showChain bool, payloadSize int64) error {
 	srvs, err := getMicroservicesList(etcdEndpoints)
 	if err != nil {
 		return err
@@ -108,7 +104,7 @@ func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, po
 		//we get the payload through the chain and we measure how much time it takes
 		start := time.Now()
 
-		_, err := getPayloadFromChain(chain, port)
+		_, err := getPayloadFromChain(chain, port, payloadSize)
 
 		duration := time.Since(start).Seconds()
 
@@ -166,13 +162,13 @@ func main() {
 	switch cmd {
 	case "server":
 
-		err := serverCmd(*interfaceName, *ipv6, etcdEndpointsArr, *generation, *ip, *port, *payloadSize)
+		err := serverCmd(*interfaceName, *ipv6, etcdEndpointsArr, *generation, *ip, *port)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "loader":
 
-		err := loaderCmd(etcdEndpointsArr, *generation, *k, *port, *n, *showChain)
+		err := loaderCmd(etcdEndpointsArr, *generation, *k, *port, *n, *showChain, *payloadSize)
 		if err != nil {
 			log.Fatal(err)
 		}
