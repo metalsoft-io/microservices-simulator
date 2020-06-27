@@ -8,12 +8,14 @@ import (
 //getMyIP returns the first ip configured on the specified interface. if ipv6 is set to true
 func getMyIP(interfaceName string, ipv6 bool) string {
 
-	en0, err := net.InterfaceByName(interfaceName)
+	log.Printf("Interrogating interface %s for ip...", interfaceName)
+
+	intf, err := net.InterfaceByName(interfaceName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	addrs, err := en0.Addrs()
+	addrs, err := intf.Addrs()
 
 	if err != nil {
 		log.Fatal(err)

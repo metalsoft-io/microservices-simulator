@@ -12,4 +12,5 @@ require (
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	go.etcd.io/etcd v3.3.22+incompatible
 	go.etcd.io/etcd/v3 v3.3.0-rc.0.0.20200625034024-94bd71adacff
+	gonum.org/v1/gonum v0.7.0
 )

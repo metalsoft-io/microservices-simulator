@@ -12,6 +12,7 @@ import (
 type myHandler struct {
 	myIP    string
 	Payload []byte
+	Port    int64
 }
 
 func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -48,34 +49,16 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 
 		//our next hop is the first on the list
-		url := fmt.Sprintf("%s/", ips[0])
+		b, err := getPayloadFromChain(ips, m.Port)
 
-		newIps := ips[1:]
-
-		reqBody, err := json.Marshal(newIps)
 		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Calling %s with %+v", url, newIps)
-		client := &http.Client{}
-		req, err := http.NewRequest("POST", url, bytes.NewReader(reqBody))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Printf("Could not execute HTTP request, aborting %v", err)
+			log.Print(err)
 			r.Response.StatusCode = 500
-			w.Write([]byte(fmt.Sprintf("Could not execute http request to %s", url)))
+			w.Write([]byte(fmt.Sprint(err)))
 			return
 		}
-
-		//we get the payload from the next hop's response
-		_, err = io.Copy(body, resp.Body)
-
 		//..and we dump it into our reply
-		w.Write(body.Bytes())
+		w.Write(b)
 	}
 
 }
