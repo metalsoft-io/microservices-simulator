@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	mrand "math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -82,8 +83,9 @@ func loaderCmd(etcdEndpoints []string, generation string, k int, port int64) err
 
 	fmt.Print("chain,chain_length,duration\n")
 	for _, indexes := range chains {
+
 		chain := []string{}
-		for _, idx := range indexes {
+		for _, idx := range shuffle(indexes) {
 			chain = append(chain, srvs[idx])
 		}
 
@@ -102,6 +104,12 @@ func loaderCmd(etcdEndpoints []string, generation string, k int, port int64) err
 	}
 
 	return nil
+}
+
+func shuffle(a []int) []int {
+	mrand.Seed(time.Now().UnixNano())
+	mrand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
+	return a
 }
 
 func clearCmd(etcdEndpoints []string) error {
