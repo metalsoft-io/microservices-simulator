@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,15 +16,18 @@ func getPayloadFromChain(URLs []string, port int64, payloadSize int64) ([]byte, 
 
 	newChain := URLs[1:]
 
-	reqBody, err := json.Marshal(newChain)
+	reqDet := requestDetails{
+		URLChain:    newChain,
+		PayloadSize: payloadSize,
+	}
+
+	reqBody, err := json.Marshal(reqDet)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", nextHop, bytes.NewReader(reqBody))
-
-	req.URL.Query().Add("payload_size", fmt.Sprintf("%d", payloadSize))
 
 	if err != nil {
 		log.Fatal(err)

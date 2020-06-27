@@ -8,12 +8,16 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type myHandler struct {
 	myIP string
 	Port int64
+}
+
+type requestDetails struct {
+	URLChain    []string `json:"url_chain"`
+	PayloadSize int64    `json:"payload_size"`
 }
 
 func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -31,9 +35,10 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	//extract an ip array from the request
-	var ips []string
+	var reqDet requestDetails
 
-	err = json.Unmarshal(body.Bytes(), &ips)
+	err = json.Unmarshal(body.Bytes(), &reqDet)
+
 	if err != nil {
 		log.Printf("Could not parse request body :%s", string(body.Bytes()))
 		r.Response = &http.Response{}
@@ -42,29 +47,11 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payloadSizeArg := r.URL.Query().Get("payload_size")
-
-	if payloadSizeArg == "" {
-		err = fmt.Errorf("missing payload_size argument")
-		log.Print(err)
-		r.Response.StatusCode = 500
-		w.Write([]byte(fmt.Sprint(err)))
-		return
-	}
-
-	payloadSize, err := strconv.ParseInt(payloadSizeArg, 10, 64)
-	if err != nil {
-		log.Print(err)
-		r.Response.StatusCode = 500
-		w.Write([]byte(fmt.Sprint(err)))
-		return
-	}
-
 	//if we are the last in the chain we return the payload
 	//otherwise contact the next element in the chain and return the payload returned by that call
-	if len(ips) == 0 {
+	if len(reqDet.URLChain) == 0 {
 
-		payload := make([]byte, payloadSize)
+		payload := make([]byte, reqDet.PayloadSize)
 
 		//generate random payload
 		rand.Read(payload)
@@ -74,7 +61,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 
 		//our next hop is the first on the list
-		b, err := getPayloadFromChain(ips, m.Port, payloadSize)
+		b, err := getPayloadFromChain(reqDet.URLChain, m.Port, reqDet.PayloadSize)
 
 		if err != nil {
 			log.Print(err)
