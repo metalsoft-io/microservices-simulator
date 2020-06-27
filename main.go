@@ -70,37 +70,57 @@ func startHTTPServer(listenOnIP string, port int64, myIP string, payloadSize int
 	}
 }
 
-func loaderCmd(etcdEndpoints []string, generation string, k int, port int64) error {
+func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, port int64, count int, showChain bool) error {
 	srvs, err := getMicroservicesList(etcdEndpoints)
 	if err != nil {
 		return err
 	}
 
-	if k == -1 {
-		k = len(srvs)
+	if showChain {
+		fmt.Print("chain,chain_length,duration\n")
+	} else {
+		fmt.Print("chain_length,duration\n")
 	}
-	chains := combin.Combinations(len(srvs), k)
 
-	fmt.Print("chain,chain_length,duration\n")
-	for _, indexes := range chains {
+	mrand.Seed(time.Now().UnixNano())
 
-		chain := []string{}
-		for _, idx := range shuffle(indexes) {
-			chain = append(chain, srvs[idx])
+	for i := 0; i < count; i++ {
+
+		k := maxChainLength
+		switch maxChainLength {
+		case -1:
+			k = len(srvs)
+		case 0:
+			k = mrand.Intn(len(srvs)) + 1
 		}
 
-		//we get the payload through the chain and we measure how much time it takes
-		start := time.Now()
+		chains := combin.Combinations(len(srvs), k)
 
-		_, err := getPayloadFromChain(chain, port)
+		for _, indexes := range chains {
 
-		duration := time.Since(start)
+			chain := []string{}
+			for _, idx := range shuffle(indexes) {
+				chain = append(chain, srvs[idx])
+			}
 
-		if err != nil {
-			log.Print(err)
+			//we get the payload through the chain and we measure how much time it takes
+			start := time.Now()
+
+			_, err := getPayloadFromChain(chain, port)
+
+			duration := time.Since(start).Seconds()
+
+			if err != nil {
+				duration = -1
+			}
+
+			if showChain {
+				fmt.Printf("\"%v\",%d,%f\n", chain, len(chain), duration)
+			} else {
+				fmt.Printf("%d,%f\n", len(chain), duration)
+			}
+
 		}
-
-		fmt.Printf("\"%v\",%d,%d\n", chain, len(chain), duration)
 	}
 
 	return nil
@@ -125,7 +145,9 @@ func main() {
 	port := flag.Int64("p", 3365, "Listen port (defaults to '3365')")
 	ip := flag.String("a", "0.0.0.0", "Ip to bind on (defaults to '0.0.0.0')")
 	payloadSize := flag.Int64("payloadSize", 64, "Payload size in bytes (defaults to 64)")
-	k := flag.Int("k", -1, "Max chain len. (defaults to -1 - no limit)")
+	k := flag.Int("k", -1, "Max chain len. (defaults to -1 - no limit). Set to zero to choose a random number every time.")
+	n := flag.Int("n", 1, "test count. (defaults to 1)")
+	showChain := flag.Bool("showChain", false, "Show chain (defaults to false)")
 
 	flag.Parse()
 
@@ -148,7 +170,7 @@ func main() {
 		}
 	case "loader":
 
-		err := loaderCmd(etcdEndpointsArr, *generation, *k, *port)
+		err := loaderCmd(etcdEndpointsArr, *generation, *k, *port, *n, *showChain)
 		if err != nil {
 			log.Fatal(err)
 		}
