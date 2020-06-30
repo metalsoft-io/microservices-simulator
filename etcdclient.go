@@ -42,9 +42,13 @@ func registerInEtcdAndRenewLeases(ip string, port int64, etcdEndpoints []string,
 func renewLease(key string, value string, cli *clientv3.Client, kv clientv3.KV) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
-	lease, _ := cli.Grant(ctx, _LeaseDurationSeconds)
+	lease, err := cli.Grant(ctx, _LeaseDurationSeconds)
+	if err != nil {
+		cancel()
+		return err
+	}
 
-	_, err := kv.Put(ctx, key, value, clientv3.WithLease(lease.ID))
+	_, err = kv.Put(ctx, key, value, clientv3.WithLease(lease.ID))
 
 	cancel()
 	if err != nil {
