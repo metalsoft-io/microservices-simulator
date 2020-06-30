@@ -14,7 +14,7 @@ func getPayloadFromChain(URLs []string, port int64, payloadSize int64) ([]byte, 
 
 	nextHop := URLs[0]
 
-	newChain := URLs[1:]
+	newChain := append([]string(nil), URLs[1:]...) //to avoid the "kind-of" memory leak
 
 	reqDet := requestDetails{
 		URLChain:    newChain,
