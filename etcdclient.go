@@ -10,7 +10,7 @@ import (
 )
 
 var _ETCDKey = "/simulator_ips"
-var _LeaseDurationSeconds int64 = 5
+var _LeaseDurationSeconds int64 = 20
 
 func registerInEtcdAndRenewLeases(ip string, port int64, etcdEndpoints []string, finished chan bool) {
 	cfg := clientv3.Config{
