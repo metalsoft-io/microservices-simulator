@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 type myHandler struct {
@@ -73,4 +74,42 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write(b)
 	}
 
+}
+
+func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generation string, listenOnIP string, port int64) error {
+	//determine my ip
+	myIP := getMyIP(interfaceName, ipv6)
+	log.Printf("Discovered IP %s from interface %s", myIP, interfaceName)
+
+	finished := make(chan bool)
+	log.Printf("Registering %s in etcd %v", myIP, etcdEndpoints)
+
+	//register myself in etcd and start the renew lease loop
+	go registerInEtcdAndRenewLeases(myIP, port, etcdEndpoints, finished)
+
+	//start http server
+	go startHTTPServer(listenOnIP, port, myIP)
+
+	//forever loop of the main thread
+	for {
+		time.Sleep(5 * time.Second)
+	}
+
+}
+
+func startHTTPServer(listenOnIP string, port int64, myIP string) {
+
+	handler := myHandler{
+		myIP: myIP,
+	}
+
+	handler.Port = port
+
+	listenOnAddrPort := fmt.Sprintf("%s:%d", listenOnIP, port)
+	log.Printf("Listening on %s", listenOnAddrPort)
+
+	err := http.ListenAndServe(listenOnAddrPort, &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
