@@ -18,7 +18,7 @@ spec:
       - name: simulator
         image: metalsoft/microservices-simulator
         command: [ "microservices-simulator"]
-        args: ["-etcd","http://etcd-client:2379"]
+        args: ["-etcd","http://etcd-client:2379","server"]
         resources:
               limits:
                 cpu: "4"
