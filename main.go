@@ -72,6 +72,14 @@ func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, po
 		return err
 	}
 
+	if len(srvs)==0{
+		return fmt.Errorf("Server count is 0. Exiting.")
+	}
+	
+	if len(srvs)<maxChainLength{
+		return fmt.Errorf("Server count (%d) is lower than maxchainlength (%d)", len(srvs), maxChainLength)		
+	}
+
 	if showChain {
 		fmt.Print("chain,chain_length,duration\n")
 	} else {
