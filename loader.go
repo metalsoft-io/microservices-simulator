@@ -57,12 +57,6 @@ func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, po
 	return nil
 }
 
-func shuffle(a []int) []int {
-	mrand.Seed(time.Now().UnixNano())
-	mrand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
-	return a
-}
-
 func generateRandomUniqueIntegers(length int) []int {
 	arr := []int{}
 	for {
@@ -94,10 +88,8 @@ func generateChain(srvs []string, chainLength int) []string {
 
 	indexes := generateRandomUniqueIntegers(chainLength)
 
-	//	for _, indexes := range chains {
-
 	chain := []string{}
-	for _, idx := range shuffle(indexes) {
+	for _, idx := range indexes {
 		chain = append(chain, srvs[idx])
 	}
 
