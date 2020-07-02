@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, port int64, count int, showChain bool, payloadSize int64) error {
+func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, port int64, count int, showChain bool, payloadSize int64, disableKeepAlive bool, timeout int) error {
 	srvs, err := getMicroservicesList(etcdEndpoints)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, po
 
 		chain := generateChain(srvs, k)
 
-		_, err := getPayloadFromChain(chain, port, payloadSize)
+		_, err := getPayloadFromChain(chain, port, payloadSize, disableKeepAlive, timeout)
 
 		duration := time.Since(start).Seconds()
 

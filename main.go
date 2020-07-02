@@ -37,6 +37,9 @@ func main() {
 	n := flag.Int("n", 1, "test count. (defaults to 1)")
 	showChain := flag.Bool("showChain", false, "Show chain (defaults to false)")
 
+	disableKeepalives := flag.Bool("disableKeepalives", false, "If set disables connection reuse. Defaults to false (enabled).")
+	timeout := flag.Int("timeout", 10, "HTTP client timeout in seconds. (defaults to 10s)")
+
 	flag.Parse()
 
 	cmd := flag.Arg(0)
@@ -52,13 +55,13 @@ func main() {
 	switch cmd {
 	case "server":
 
-		err := serverCmd(*interfaceName, *ipv6, etcdEndpointsArr, *generation, *ip, *port)
+		err := serverCmd(*interfaceName, *ipv6, etcdEndpointsArr, *generation, *ip, *port, *disableKeepalives, *timeout)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "loader":
 
-		err := loaderCmd(etcdEndpointsArr, *generation, *k, *port, *n, *showChain, *payloadSize)
+		err := loaderCmd(etcdEndpointsArr, *generation, *k, *port, *n, *showChain, *payloadSize, *disableKeepalives, *timeout)
 		if err != nil {
 			log.Fatal(err)
 		}

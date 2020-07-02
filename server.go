@@ -12,8 +12,10 @@ import (
 )
 
 type myHandler struct {
-	myIP string
-	Port int64
+	myIP             string
+	Port             int64
+	DisableKeepAlive bool
+	Timeout          int
 }
 
 type requestDetails struct {
@@ -62,7 +64,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 
 		//our next hop is the first on the list
-		b, err := getPayloadFromChain(reqDet.URLChain, m.Port, reqDet.PayloadSize)
+		b, err := getPayloadFromChain(reqDet.URLChain, m.Port, reqDet.PayloadSize, m.DisableKeepAlive, m.Timeout)
 
 		if err != nil {
 			log.Print(err)
@@ -76,7 +78,7 @@ func (m *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generation string, listenOnIP string, port int64) error {
+func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generation string, listenOnIP string, port int64, disableKeepAlive bool, timeout int) error {
 	//determine my ip
 	myIP := getMyIP(interfaceName, ipv6)
 	log.Printf("Discovered IP %s from interface %s", myIP, interfaceName)
@@ -88,7 +90,7 @@ func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generati
 	go registerInEtcdAndRenewLeases(myIP, port, etcdEndpoints, finished)
 
 	//start http server
-	go startHTTPServer(listenOnIP, port, myIP)
+	go startHTTPServer(listenOnIP, port, myIP, disableKeepAlive, timeout)
 
 	//forever loop of the main thread
 	for {
@@ -97,10 +99,12 @@ func serverCmd(interfaceName string, ipv6 bool, etcdEndpoints []string, generati
 
 }
 
-func startHTTPServer(listenOnIP string, port int64, myIP string) {
+func startHTTPServer(listenOnIP string, port int64, myIP string, disableKeepAlive bool, timeout int) {
 
 	handler := myHandler{
-		myIP: myIP,
+		myIP:             myIP,
+		DisableKeepAlive: disableKeepAlive,
+		Timeout:          timeout,
 	}
 
 	handler.Port = port
