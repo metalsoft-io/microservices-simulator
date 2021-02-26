@@ -9,7 +9,7 @@ The simulator can vary the chain depth, disablekeepalive etc.
 ## Starting the cluster
 BY default this starts 40 microservices clients:
 ```bash
-kubectl apply -f microservices-simulator.yaml
+kubectl apply -f microservices-simulator.yml
 ```
 
 
