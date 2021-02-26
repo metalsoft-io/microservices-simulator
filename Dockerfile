@@ -7,7 +7,7 @@ FROM golang
 # Build the outyet command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
-RUN go get github.com/metalsoft-io/microservices-simulator
+RUN go get github.com/metalsoft-io/microservices-simulator@1.0
 
 # Run the outyet command by default when the container starts.
 ENTRYPOINT /go/bin/microservices-simulator
