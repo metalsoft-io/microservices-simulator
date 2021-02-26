@@ -39,16 +39,16 @@ func loaderCmd(etcdEndpoints []string, generation string, maxChainLength int, po
 
 		_, err := getPayloadFromChain(chain, port, payloadSize, disableKeepAlive, timeout)
 
-		duration := time.Since(start).Seconds()
+		duration := time.Since(start).Microseconds()
 
 		if err != nil {
 			duration = -1
 		}
 
 		if showChain {
-			fmt.Printf("\"%v\",%d,%f\n", chain, len(chain), duration)
+			fmt.Printf("\"%v\",%d,%d\n", chain, len(chain), duration)
 		} else {
-			fmt.Printf("%d,%f\n", len(chain), duration)
+			fmt.Printf("%d,%d\n", len(chain), duration)
 		}
 
 		//	}
