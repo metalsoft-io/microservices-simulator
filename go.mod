@@ -35,7 +35,6 @@ require (
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc // indirect
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2 // indirect
-	gonum.org/v1/gonum v0.7.0
 	google.golang.org/grpc v1.26.0 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
