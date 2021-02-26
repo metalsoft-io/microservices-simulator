@@ -1,4 +1,4 @@
-module github.com/homealone/microservices-simulator
+module github.com/metalsoft-io/microservices-simulator
 
 go 1.14
 
