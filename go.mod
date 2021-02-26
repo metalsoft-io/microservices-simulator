@@ -2,11 +2,8 @@ module github.com/metalsoft-io/microservices-simulator
 
 go 1.14
 
-//require (
-//go.etcd.io/etcd/clientv3@latest
-//)
-
 require (
+	github.com/coreos/bbolt v0.0.0-00010101000000-000000000000 // indirect
 	github.com/coreos/etcd v3.3.22+incompatible // indirect
 	github.com/coreos/go-semver v0.2.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
@@ -38,4 +35,4 @@ require (
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
-replace github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.3
+replace github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.5
