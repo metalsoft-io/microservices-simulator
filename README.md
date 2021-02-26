@@ -69,3 +69,10 @@ To deploy an etcd cluster in kubernetes use the following manifest:
 kubectl apply -f https://raw.githubusercontent.com/etcd-io/etcd/master/hack/kubernetes-deploy/etcd.yml
 ```
 
+
+## Building
+Make sure to commit before building the image.  To build the docker image use:
+```
+docker build
+```
+
